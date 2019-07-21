@@ -3,12 +3,22 @@ const { YTSearcher } = require('ytsearcher');
 const ytpl = require('ytpl');
 const Discord = require('discord.js');
 const PACKAGE = require('./package.json');
-const langPL = require('./langPL.js')
-const langEN = require('./langEN.js')
-let lang = langPL
+const moment = require('moment')
+const path = require('path');
+const fs = require('fs');
+var localecode = require('locale-code')
+const directoryPath = path.join(__dirname, 'langs');
+let lang = require("./langs/en-US.js")
 
 exports.start = (client, options) => {
   try {
+    fs.readdir(directoryPath, function (err, files) {
+      if (err) return console.log('Unable to scan directory with languages: ' + err);
+      files.forEach(function (file) {
+        file = file.replace('.js', '')
+        console.log("[MUSIC_LOADLANG] Language found: " + localecode.getLanguageName(file) + ` (${file})`)
+      });
+    });
     if (process.version.slice(1).split('.')[0] < 8) console.error(new Error(`[MusicBot] node v8 or higher is needed, please update`));
     function moduleAvailable(name) {
       try {
@@ -19,7 +29,6 @@ exports.start = (client, options) => {
     };
     if (moduleAvailable("ffmpeg-binaries")) console.error(new Error("[MUSIC] ffmpeg-binaries was found, this will likely cause problems"));
     if (!moduleAvailable("ytdl-core") || !moduleAvailable("ytpl") || !moduleAvailable("ytsearcher")) console.error(new Error("[MUSIC] one or more youtube specific modules not found, this module will not work"));
-
     class Music {
       constructor(client, options) {
         // Data Objects
@@ -203,6 +212,7 @@ exports.start = (client, options) => {
         this.clearOnLeave = (options && typeof options.clearOnLeave !== 'undefined' ? options && options.clearOnLeave : true);
         this.messageHelp = (options && typeof options.messageHelp !== 'undefined' ? options && options.messageHelp : false);
         this.dateLocal = (options && options.dateLocal) || 'en-US';
+        lang = require("./langs/" + this.dateLocal)
         this.bigPicture = (options && typeof options.bigPicture !== 'undefined' ? options && options.bigPicture : false);
         this.messageNewSong = (options && typeof options.messageNewSong !== 'undefined' ? options && options.messageNewSong : true);
         this.insertMusic = (options && typeof options.insertMusic !== 'undefined' ? options && options.insertMusic : false);
@@ -358,6 +368,7 @@ exports.start = (client, options) => {
     };
 
     client.on("ready", () => {
+      moment.locale(options.dateLocal)
       console.log(`Music module: Version: ${PACKAGE.version}, Extra Logs: ${musicbot.logging}, Node.js: ${process.version}.`);
       if (musicbot.cooldown.exclude.includes("skip")) console.warn(`[MUSIC] Excluding SKIP CMD from cooldowns can cause issues.`);
       if (musicbot.cooldown.exclude.includes("play")) console.warn(`[MUSIC] Excluding PLAY CMD from cooldowns can cause issues.`);
@@ -441,7 +452,7 @@ exports.start = (client, options) => {
             video.channelURL = video.author.ref;
             video.requester = msg.author.id;
             video.position = musicbot.queues.get(msg.guild.id).songs ? musicbot.queues.get(msg.guild.id).songs.length : 0;
-            video.queuedOn = new Date().toLocaleDateString(musicbot.dateLocal, { weekday: 'long', hour: 'numeric' });
+            video.queuedOn = moment().format('LLLL');
             video.requesterAvatarURL = msg.author.displayAvatarURL;
             queue.songs.push(video);
             if (queue.songs.length === 1) musicbot.executeQueue(msg, queue);
@@ -464,7 +475,7 @@ exports.start = (client, options) => {
           res.requester = msg.author.id;
           if (searchstring.startsWith("https://www.youtube.com/") || searchstring.startsWith("https://youtu.be/")) res.url = searchstring;
           res.channelURL = `https://www.youtube.com/channel/${res.channelId}`;
-          res.queuedOn = new Date().toLocaleDateString(musicbot.dateLocal, { weekday: 'long', hour: 'numeric' });
+          res.queuedOn = moment().format('LLLL');
           if (musicbot.requesterName) res.requesterAvatarURL = msg.author.displayAvatarURL;
           const queue = musicbot.getQueue(msg.guild.id)
           res.position = queue.songs.length ? queue.songs.length : 0;
@@ -473,6 +484,7 @@ exports.start = (client, options) => {
           if (msg.channel.permissionsFor(msg.guild.me).has('EMBED_LINKS')) {
             const embed = new Discord.RichEmbed();
             try {
+              let date = moment.duration(res.duration);
               embed.setAuthor(lang.queueAdd, client.user.avatarURL);
               var songTitle = res.title.replace(/\\/g, '\\\\')
                 .replace(/\`/g, '\\`')
@@ -483,6 +495,13 @@ exports.start = (client, options) => {
               embed.setColor(musicbot.embedColor);
               embed.addField(res.channelTitle, `[${songTitle}](${res.url})`, musicbot.inlineEmbeds);
               embed.addField(lang.queuedOn, res.queuedOn, musicbot.inlineEmbeds);
+              if (res.duration >= 3600000) {
+                embed.addField(lang.durationTime, `${date.hours() < 10 ? `0${date.hours()}` : date.hours()}:${date.minutes() < 10 ? `0${date.minutes()}` : date.minutes()}:${date.seconds() < 10 ? `0${date.seconds()}` : date.seconds()}`, musicbot.inlineEmbeds);
+              } else if (res.duration >= 60000) {
+                embed.addField(lang.durationTime, `${date.minutes() < 10 ? `0${date.minutes()}` : date.minutes()}:${date.seconds() < 10 ? `0${date.seconds()}` : date.seconds()}`, musicbot.inlineEmbeds);
+              } else {
+                embed.addField(lang.durationTime, `0:${date.seconds() < 10 ? `0${date.seconds()}` : date.seconds()}`, musicbot.inlineEmbeds);
+              }
               if (!musicbot.bigPicture) embed.setThumbnail(`https://img.youtube.com/vi/${res.id}/maxresdefault.jpg`);
               if (musicbot.bigPicture) embed.setImage(`https://img.youtube.com/vi/${res.id}/maxresdefault.jpg`);
               const resMem = client.users.get(res.requester);
@@ -700,6 +719,26 @@ exports.start = (client, options) => {
           embed.setColor(musicbot.embedColor);
           embed.addField(queue.last.channelTitle, `[${songTitle}](${queue.last.url})`, musicbot.inlineEmbeds);
           embed.addField(lang.queuedOn, queue.last.queuedOn, musicbot.inlineEmbeds);
+          let disDate = moment.duration(dispatcher.time);
+          let disTime = '';
+          // NOTE dispatcher
+          if (dispatcher.time >= 3600000) {
+            disTime = `${disDate.hours() < 10 ? `0${disDate.hours()}` : disDate.hours()}:${disDate.minutes() < 10 ? `0${disDate.minutes()}` : disDate.minutes()}:${disDate.seconds() < 10 ? `0${disDate.seconds()}` : disDate.seconds()}`;
+          } else if (dispatcher.time >= 60000) {
+            disTime = `${disDate.minutes() < 10 ? `0${disDate.minutes()}` : disDate.minutes()}:${disDate.seconds() < 10 ? `0${disDate.seconds()}` : disDate.seconds()}`;
+          } else {
+            disTime = `0:${disDate.seconds() < 10 ? `0${disDate.seconds()}` : disDate.seconds()}`;
+          }
+          let songDate = moment.duration(queue.last.duration);
+          let songTime = '';
+          if (queue.last.duration >= 3600000) {
+            songTime = `${songDate.hours() < 10 ? `0${songDate.hours()}` : songDate.hours()}:${songDate.minutes() < 10 ? `0${songDate.minutes()}` : songDate.minutes()}:${songDate.seconds() < 10 ? `0${songDate.seconds()}` : songDate.seconds()}`;
+          } else if (queue.last.duration >= 60000) {
+            songTime = `${songDate.minutes() < 10 ? `0${songDate.minutes()}` : songDate.minutes()}:${songDate.seconds() < 10 ? `0${songDate.seconds()}` : songDate.seconds()}`;
+          } else {
+            songTime = `0:${songDate.seconds() < 10 ? `0${songDate.seconds()}` : songDate.seconds()}`;
+          }
+          embed.addField(lang.time, `${disTime} / ${songTime}`, musicbot.inlineEmbeds);
           if (!musicbot.bigPicture) embed.setThumbnail(`https://img.youtube.com/vi/${queue.last.id}/maxresdefault.jpg`);
           if (musicbot.bigPicture) embed.setImage(`https://img.youtube.com/vi/${queue.last.id}/maxresdefault.jpg`);
           const resMem = client.users.get(queue.last.requester);
@@ -1116,7 +1155,7 @@ exports.start = (client, options) => {
                 result.requester = msg.author.id;
                 if (musicbot.requesterName) result.requesterAvatarURL = msg.author.displayAvatarURL;
                 result.channelURL = `https://www.youtube.com/channel/${result.channelId}`;
-                result.queuedOn = new Date().toLocaleDateString(musicbot.dateLocal, { weekday: 'long', hour: 'numeric' });
+                result.queuedOn = moment().format('LLLL');
                 videos.push(result);
                 if (i === max) {
                   i = 101;
@@ -1370,6 +1409,7 @@ exports.start = (client, options) => {
     }
 
     musicbot.note = (type, text) => {
+      const embed = new Discord.RichEmbed();
       if (type === 'wrap') {
         let ntext = text
           .replace(/`/g, '`' + String.fromCharCode(8203))
@@ -1377,11 +1417,11 @@ exports.start = (client, options) => {
           .replace(client.token, 'REMOVED');
         return '```\n' + ntext + '\n```';
       } else if (type === 'note') {
-        return ':musical_note: | ' + text.replace(/`/g, '`' + String.fromCharCode(8203));
+        return embed.setDescription(':musical_note: | ' + text.replace(/`/g, '`' + String.fromCharCode(8203))).setColor("#ffff00")
       } else if (type === 'search') {
-        return ':mag: | ' + text.replace(/`/g, '`' + String.fromCharCode(8203));
+        return embed.setDescription(':mag: | ' + text.replace(/`/g, '`' + String.fromCharCode(8203))).setColor("#008000")
       } else if (type === 'fail') {
-        return ':no_entry_sign: | ' + text.replace(/`/g, '`' + String.fromCharCode(8203));
+        return embed.setDescription(':no_entry_sign: | ' + text.replace(/`/g, '`' + String.fromCharCode(8203))).setColor("#ff0000").setTitle(lang.embedError)
       } else if (type === 'font') {
         return text.replace(/`/g, '`' + String.fromCharCode(8203))
           .replace(/@/g, '@' + String.fromCharCode(8203))

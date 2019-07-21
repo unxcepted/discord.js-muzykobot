@@ -1,5 +1,5 @@
 module.exports = {
-    langEN:{
+    LANG_ID: "en-US",
     playHelp: "Queue a song/playlist by URL or name.",
     helpHelp: "Help for commands.",
     pauseHelp: "Pauses playing music.",
@@ -37,6 +37,9 @@ module.exports = {
     requestedByWithoutSpace: "Requested by",
     nowPlaying: "Now Playing",
     commands: "Commands",
-    use: "Use "
-  }
+    use: "Use ",
+    embedError: "Error!",
+    embedSearch: "Searching!",
+    durationTime: "Duration time",
+    time: "Time:"
 }

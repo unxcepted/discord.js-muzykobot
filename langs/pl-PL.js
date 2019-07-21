@@ -1,5 +1,5 @@
 module.exports = {
-    langPL:{
+    LANG_ID: "pl-PL",
     playHelp: "Dodaje utwór/playlistę do kolejki.",
     helpHelp: "Pomoc dla komend",
     pauseHelp: "Wstrzymuje odtwarzanie muzyki.",
@@ -37,6 +37,9 @@ module.exports = {
     requestedByWithoutSpace: "Dodał",
     nowPlaying: "Teraz gram",
     commands: "Komendy",
-    use: "Użyj "
-  }
+    use: "Użyj ",
+    embedError: "Błąd!",
+    embedSearch: "Szukam!",
+    durationTime: "Czas trwania",
+    time: "Czas:"
 }
