@@ -1,5 +1,4 @@
 module.exports = {
-    LANG_ID: "en-US",
     playHelp: "Queue a song/playlist by URL or name.",
     helpHelp: "Help for commands.",
     pauseHelp: "Pauses playing music.",
@@ -23,7 +22,6 @@ module.exports = {
     noVideo: 'No video specified!',
     maxQueue: 'Maximum queue size reached!',
     playlistSearching: "Searching playlist items~",
-    playlistFetchErr: "Something went wrong fetching that playlist!",
     playlistFetchZero: "Couldn't get any videos from that playlist.",
     playlistFetchOverLimit: "Too many videos to queue. A maximum of 50 is allowed.",
     playlistQueuedOne: "Queued one song.",
@@ -41,5 +39,15 @@ module.exports = {
     embedError: "Error!",
     embedSearch: "Searching!",
     durationTime: "Duration time",
-    time: "Time:"
+    time: "Time:",
+    playbackFinished: "Playback finished.",
+    noOneinVC: "No one in the voice channel, leaving...",
+    queueErrCon: "Something went wrong with the connection. Retrying queue...",
+    queueErr: "Something went wrong while playing music. Retrying queue...",
+    queueErrNotFound: "No queue for this server found!",
+    vcErrNoPerm: "I do not have permission to join your voice channel!",
+    loopOnce: "Looping single enabled!",
+    loopQueue: "Looping queue enabled!",
+    loopOff: "Looping disabled!",
+    removed: "Removed:"
 }
