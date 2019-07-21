@@ -1,5 +1,4 @@
 module.exports = {
-    LANG_ID: "pl-PL",
     playHelp: "Dodaje utwór/playlistę do kolejki.",
     helpHelp: "Pomoc dla komend",
     pauseHelp: "Wstrzymuje odtwarzanie muzyki.",
