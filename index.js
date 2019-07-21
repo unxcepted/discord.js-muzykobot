@@ -212,7 +212,7 @@ exports.start = (client, options) => {
         this.clearOnLeave = (options && typeof options.clearOnLeave !== 'undefined' ? options && options.clearOnLeave : true);
         this.messageHelp = (options && typeof options.messageHelp !== 'undefined' ? options && options.messageHelp : false);
         this.dateLocal = (options && options.dateLocal) || 'en-US';
-        lang = require("./langs/" + this.dateLocal)
+        try { lang = require("./langs/" + this.dateLocal); console.log(`[MUSIC_LOADLANG] Using language ${this.dateLocal}`) } catch (e) { lang = require("./langs/en-US"); console.warn(`[MUSIC_LOADLANG] WARNING! Language ${this.dateLocal} not found. Using en-US!`) }
         this.bigPicture = (options && typeof options.bigPicture !== 'undefined' ? options && options.bigPicture : false);
         this.messageNewSong = (options && typeof options.messageNewSong !== 'undefined' ? options && options.messageNewSong : true);
         this.insertMusic = (options && typeof options.insertMusic !== 'undefined' ? options && options.insertMusic : false);
@@ -437,7 +437,7 @@ exports.start = (client, options) => {
           .includes('&t=')) playid = playid.split('&t=')[0];
 
         ytpl(playid, function (err, playlist) {
-          if (err) return msg.channel.send(musicbot.note('fail', lang.playlistFetchErr));
+          if (err) return msg.channel.send(musicbot.note('fail', lang.fail));
           if (playlist.items.length <= 0) return msg.channel.send(musicbot.note('fail', lang.playlistFetchZero));
           if (playlist.total_items >= 50) return msg.channel.send(musicbot.note('fail', lang.playlistFetchOverLimit));
           var index = 0;
@@ -459,7 +459,7 @@ exports.start = (client, options) => {
             index++;
 
             if (ran >= playlist.items.length) {
-              if (index == 0) msg.channel.send(musicbot.note('fail', lang.playlistFetchErr))
+              if (index == 0) msg.channel.send(musicbot.note('fail', lang.fail))
               else if (index == 1) msg.channel.send(musicbot.note('note', lang.playlistQueuedOne));
               else if (index > 1) msg.channel.send(musicbot.note('note', lang.playlistQueued + index + lang.playlistSongs));
             }
@@ -645,7 +645,7 @@ exports.start = (client, options) => {
       const dispatcher = voiceConnection.player.dispatcher;
       if (!dispatcher || dispatcher === null) {
         if (musicbot.logging) return console.log(new Error(`dispatcher null on skip cmd [${msg.guild.name}] [${msg.author.username}]`));
-        return msg.channel.send(musicbot.note("fail", "Something went wrong running skip."));
+        return msg.channel.send(musicbot.note("fail", lang.fail));
       };
       if (voiceConnection.paused) dispatcher.end();
       dispatcher.end();
@@ -1196,20 +1196,20 @@ exports.start = (client, options) => {
           const dispatcher = voiceConnection.player.dispatcher;
           if (!dispatcher || dispatcher === null) {
             if (musicbot.logging) return console.log(new Error(`dispatcher null on skip cmd [${msg.guild.name}] [${msg.author.username}]`));
-            return msg.channel.send(musicbot.note("fail", "Something went wrong."));
+            return msg.channel.send(musicbot.note("fail", lang.fail));
           };
           if (voiceConnection.paused) dispatcher.end();
           dispatcher.end();
         }
       }).catch(res => {
         console.error(new Error(`[clearCmd] [${msg.guild.id}] ${res}`))
-        return msg.channel.send(musicbot.note("fail", "Something went wrong clearing the queue."));
+        return msg.channel.send(musicbot.note("fail", lang.fail));
       })
     };
 
     musicbot.removeFunction = (msg, suffix, args) => {
       if (!msg.member.voiceChannel) return msg.channel.send(musicbot.note('fail', lang.notInVC));
-      if (!musicbot.queues.has(msg.guild.id)) return msg.channel.send(musicbot.note('fail', `No queue for this server found!`));
+      if (!musicbot.queues.has(msg.guild.id)) return msg.channel.send(musicbot.note('fail', lang.queueErrNotFound));
       if (!suffix) return msg.channel.send(musicbot.note("fail", "No video position given."));
       let vc = client.voiceConnections.find(val => val.channel.guild.id == msg.member.guild.id)
       if (vc && vc.channel.id != msg.member.voiceChannel.id) return msg.channel.send(musicbot.note('fail', lang.vcMismatch));
@@ -1220,27 +1220,27 @@ exports.start = (client, options) => {
         let newq = musicbot.queues.get(msg.guild.id).songs.filter(s => s !== test);
         musicbot.updatePositions(newq, msg.guild.id).then(res => {
           musicbot.queues.get(msg.guild.id).songs = res;
-          msg.channel.send(musicbot.note("note", `Removed:  \`${test.title.replace(/`/g, "'")}\``));
+          msg.channel.send(musicbot.note("note", `${lang.removed}  \`${test.title.replace(/`/g, "'")}\``));
         })
       } else {
-        msg.channel.send(musicbot.note("fail", "Couldn't find that video or something went wrong."));
+        msg.channel.send(musicbot.note("fail", lang.fail));
       }
     };
 
     musicbot.loopFunction = (msg, suffix, args) => {
       if (!msg.member.voiceChannel) return msg.channel.send(musicbot.note('fail', lang.notInVC));
-      if (!musicbot.queues.has(msg.guild.id)) return msg.channel.send(musicbot.note('fail', `No queue for this server found!`));
+      if (!musicbot.queues.has(msg.guild.id)) return msg.channel.send(musicbot.note('fail', lang.queueErrNotFound));
       let vc = client.voiceConnections.find(val => val.channel.guild.id == msg.member.guild.id)
       if (vc && vc.channel.id != msg.member.voiceChannel.id) return msg.channel.send(musicbot.note('fail', lang.vcMismatch));
       if (musicbot.queues.get(msg.guild.id).loop == "none" || musicbot.queues.get(msg.guild.id).loop == null) {
         musicbot.queues.get(msg.guild.id).loop = "song";
-        msg.channel.send(musicbot.note('note', 'Looping single enabled! :repeat_one:'));
+        msg.channel.send(musicbot.note('note', lang.loopOnce + ' :repeat_one:'));
       } else if (musicbot.queues.get(msg.guild.id).loop == "song") {
         musicbot.queues.get(msg.guild.id).loop = "queue";
-        msg.channel.send(musicbot.note('note', 'Looping queue enabled! :repeat:'));
+        msg.channel.send(musicbot.note('note', lang.loopQueue + ' :repeat:'));
       } else if (musicbot.queues.get(msg.guild.id).loop == "queue") {
         musicbot.queues.get(msg.guild.id).loop = "none";
-        msg.channel.send(musicbot.note('note', 'Looping disabled! :arrow_forward:'));
+        msg.channel.send(musicbot.note('note', lang.loopHelp + ' :arrow_forward:'));
         const voiceConnection = client.voiceConnections.find(val => val.channel.guild.id == msg.guild.id);
         const dispatcher = voiceConnection.player.dispatcher;
         let wasPaused = dispatcher.paused;
@@ -1277,7 +1277,7 @@ exports.start = (client, options) => {
 
     musicbot.executeQueue = (msg, queue) => {
       if (queue.songs.length <= 0) {
-        msg.channel.send(musicbot.note('note', 'Playback finished~'));
+        msg.channel.send(musicbot.note('note', lang.playbackFinished));
         musicbot.queues.set(msg.guild.id, { songs: [], last: null, loop: "none", id: msg.guild.id, volume: musicbot.defVolume });
         if (musicbot.musicPresence) musicbot.updatePresence(musicbot.queues.get(msg.guild.id), msg.client, musicbot.clearPresence).catch((res) => { console.warn(`[MUSIC] Problem updating MusicPresence`); });
         const voiceConnection = client.voiceConnections.find(val => val.channel.guild.id == msg.guild.id);
@@ -1323,7 +1323,7 @@ exports.start = (client, options) => {
         if (!video) {
           video = musicbot.queues.get(msg.guild.id).songs ? musicbot.queues.get(msg.guild.id).songs[0] : false;
           if (!video) {
-            msg.channel.send(musicbot.note('note', 'Playback finished!'));
+            msg.channel.send(musicbot.note('note', lang.playbackFinished));
             musicbot.emptyQueue(msg.guild.id);
             const voiceConnection = client.voiceConnections.find(val => val.channel.guild.id == msg.guild.id);
             if (voiceConnection !== null) return voiceConnection.disconnect();
@@ -1359,13 +1359,13 @@ exports.start = (client, options) => {
 
           connection.on('error', (error) => {
             console.error(error);
-            if (msg && msg.channel) msg.channel.send(musicbot.note('fail', `Something went wrong with the connection. Retrying queue...`));
+            if (msg && msg.channel) msg.channel.send(musicbot.note('fail', lang.queueErrCon));
             musicbot.executeQueue(msg, musicbot.queues.get(msg.guild.id));
           });
 
           dispatcher.on('error', (error) => {
             console.error(error);
-            if (msg && msg.channel) msg.channel.send(musicbot.note('fail', `Something went wrong while playing music. Retrying queue...`));
+            if (msg && msg.channel) msg.channel.send(musicbot.note('fail', lang.queueErr));
             musicbot.executeQueue(msg, musicbot.queues.get(msg.guild.id));
           });
 
@@ -1374,7 +1374,7 @@ exports.start = (client, options) => {
               let loop = musicbot.queues.get(msg.guild.id).loop;
               const voiceConnection = client.voiceConnections.find(val => val.channel.guild.id == msg.guild.id);
               if (voiceConnection !== null && voiceConnection.channel.members.size <= 1) {
-                msg.channel.send(musicbot.note('note', 'No one in the voice channel, leaving...'))
+                msg.channel.send(musicbot.note('note', lang.noOneinVC))
                 musicbot.queues.set(msg.guild.id, { songs: [], last: null, loop: "none", id: msg.guild.id, volume: musicbot.defVolume });
                 if (musicbot.musicPresence) musicbot.updatePresence(musicbot.queues.get(msg.guild.id), msg.client, musicbot.clearPresence).catch((res) => { console.warn(`[MUSIC] Problem updating MusicPresence`); });
                 return voiceConnection.disconnect();
@@ -1390,7 +1390,7 @@ exports.start = (client, options) => {
                   musicbot.executeQueue(msg, musicbot.queues.get(msg.guild.id));
                 };
               } else if (musicbot.queues.get(msg.guild.id).songs.length <= 0) {
-                if (msg && msg.channel) msg.channel.send(musicbot.note('note', 'Playback finished.'));
+                if (msg && msg.channel) msg.channel.send(musicbot.note('note', lang.playbackFinished));
                 musicbot.queues.set(msg.guild.id, { songs: [], last: null, loop: "none", id: msg.guild.id, volume: musicbot.defVolume });
                 if (musicbot.musicPresence) musicbot.updatePresence(musicbot.queues.get(msg.guild.id), msg.client, musicbot.clearPresence).catch((res) => { console.warn(`[MUSIC] Problem updating MusicPresence`); });
                 const voiceConnection = client.voiceConnections.find(val => val.channel.guild.id == msg.guild.id);
