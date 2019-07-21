@@ -1,5 +1,4 @@
 module.exports = {
-    LANG_ID: "pl-PL",
     playHelp: "Dodaje utwór/playlistę do kolejki.",
     helpHelp: "Pomoc dla komend",
     pauseHelp: "Wstrzymuje odtwarzanie muzyki.",
@@ -23,7 +22,6 @@ module.exports = {
     noVideo: "Nie podano co mam odtworzyć.",
     maxQueue: "Osiągnięto limit kolejki!",
     playlistSearching: "Szukam utworów z playlisty.",
-    playlistFetchErr: "Coś się zepsuło podczas wczytywania playlisty.",
     playlistFetchZero: "Nie można wczytać utworów z playlisty.",
     playlistFetchOverLimit: "Za dużo utworów w playliście! Limit wynosi 50.",
     playlistQueuedOne: "Dodano piosenkę.",
@@ -41,5 +39,15 @@ module.exports = {
     embedError: "Błąd!",
     embedSearch: "Szukam!",
     durationTime: "Czas trwania",
-    time: "Czas:"
+    time: "Czas:",
+    playbackFinished: "Odtwarzanie zakończone.",
+    noOneinVC: "Nikogo nie ma na kanale, wychodzę...",
+    queueErrCon: "Coś jest nie tak z połączeniem, próbuję wznowić kolejkę...",
+    queueErr: "Coś się zepsuło, próbuję wznowić kolejkę...",
+    queueErrNotFound: "Nie znaleziono kolejki na tym serwerze!",
+    vcErrNoPerm: "Nie mam uprawnień aby dołączyć do kanału głosowego!",
+    loopOnce: "Zapętlam pojedynczy utwór!",
+    loopQueue: "Zapętlam całą kolejkę!",
+    loopOff: "Wyłączono zapętlanie!",
+    removed: "Usunięto:"
 }
