@@ -57,7 +57,7 @@ Opcje można podać w `music.start(client, {options})`. Lista opcji:
 ## Podstawowe opcje
 | Nazwa | Typ | Opis | Domyślna wartość |  
 | --- | --- | --- | --- |
-| youtubeKey | String | Klucz YouTube Data API3. Wymagany do uruchomienia! | NaN |
+| youtubeKey | Array | Klucz lub klucze YouTube Data API3. Wymagany do uruchomienia! | NaN |
 | botPrefix | String | Ciąg znaków używany przed nazwą komendy. Można użyć również mapy z prefixami | ! |
 | messageNewSong | Boolean | Czy bot ma wysyłać informacje o rozpoczęciu nowej piosenki | true |
 | bigPicture | Boolean | Czy bot ma użyć dużych (true) czy małych (false) obrazów w wiadomości | false |
