@@ -356,8 +356,12 @@ exports.start = (client, options) => {
     var musicbot = new Music(client, options);
     if (musicbot.insertMusic == true) client.music = musicbot;
     else exports.bot = musicbot;
-
-    musicbot.searcher = new YTSearcher(musicbot.youtubeKey);
+    musicbot.youtubeKeyRand = (ytkeys) => {
+       let keys = ytkeys
+       let value = keys[Math.floor(Math.random() * keys.length)]
+       return value
+    }
+    musicbot.searcher = new YTSearcher(musicbot.youtubeKeyRand(options.youtubeKey));
     musicbot.changeKey = (key) => {
       return new Promise((resolve, reject) => {
         if (!key || typeof key !== "string") reject("key must be a string");
