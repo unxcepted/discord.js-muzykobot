@@ -8,11 +8,10 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "ytdl-core": "^0.29.2",
-    "ytpl": "^0.1.14",
+    "ytdl-core": "^1.0.7",
+    "ytpl": "^0.1.19",
     "ytsearcher": "^1.2.2",
-    "moment": "^2.23.0",
-    "path": "0.12.7",
+    "moment": "^2.24.0",
     "locale-code": "2.0.2"
   },
   "repository": {
