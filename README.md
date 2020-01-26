@@ -4,7 +4,11 @@
   </p>
 </div>  
 
-# Discord.JS Muzykobot
+# Discord.JS Muzykobot - Fork na potrzeby Infinity V2
+
+Pracujemy nad wersją 3, ma ona juz własny, lepszy moduł, niestety nie mozemy jej jeszcze wydać.
+Nie, nie jestesmy debilami, nie pisaliśmy tego modułu. Niestety nie dziala i konieczne są poprawki.
+
 ***
 To prosty moduł Node.JS bazowany na innych projektach botów muzycznych dla Discord.JS.
 
